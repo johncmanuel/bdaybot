@@ -9,48 +9,50 @@ import {
   DISCORD_PUBLIC_KEY,
   DISCORD_TOKEN,
 } from "bdaybot/envs.ts";
-
-import type { AppSchema } from "@discord-applications/app";
-import { createApp, InteractionResponseType } from "@discord-applications/app";
+import { bdaySchema } from "bdaybot/app/schema/bday.ts";
+import { createApp } from "@discord-applications/app";
 
 // Put here or inside the cron job?
 const db = await Deno.openKv();
 
 Deno.cron(
-  "Get all birthdays every midnight from DB and send message via Discord webhook",
+  "Get all birthdays every midnight from DB and send message via Discord webhook if one is today",
   "0 0 * * *",
   async () => {
     // do something here xd
   },
 );
 
-export const highFiveSchema = {
-  user: { name: "High Five" },
-} as const satisfies AppSchema;
-
 if (import.meta.main) {
   const highFive = await createApp(
     {
-      schema: highFiveSchema,
+      schema: bdaySchema,
       applicationID: DISCORD_APP_ID,
       publicKey: DISCORD_PUBLIC_KEY,
-      // @ts-ignore: should be valid typing here for the discord token
-      register: { token: DISCORD_TOKEN },
+      token: DISCORD_TOKEN,
+      register: true,
       invite: { path: "/invite", scopes: ["applications.commands"] },
     },
-    (interaction) => {
-      const targetUser =
-        interaction.data.resolved.users[interaction.data.target_id];
-      return {
-        type: InteractionResponseType.ChannelMessageWithSource,
-        data: {
-          content:
-            `<@${interaction.member?.user.id}> high-fived <@${targetUser.id}>!`,
+    {
+      user: {
+        add(interaction) {
+          // Add user bday to db
         },
-      };
+        rm(interaction) {
+          // Remove user bday from db
+        },
+        update(interaction) {
+          // Update user bday in db
+        },
+        "get-all"(interaction) {
+          // Get all bdays from db
+        },
+        "get-user"(interaction) {
+          // Get user bday from db
+        },
+      },
     },
   );
 
-  // Start the server.
   Deno.serve(highFive);
 }

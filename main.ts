@@ -36,19 +36,15 @@ if (import.meta.main) {
     {
       user: {
         add(interaction) {
-          // Add user bday to db
+          const bday = interaction.options.bday;
         },
         rm(interaction) {
-          // Remove user bday from db
         },
         update(interaction) {
-          // Update user bday in db
         },
         "get-all"(interaction) {
-          // Get all bdays from db
         },
         "get-user"(interaction) {
-          // Get user bday from db
         },
       },
     },

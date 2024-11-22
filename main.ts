@@ -11,6 +11,7 @@ import {
 } from "bdaybot/envs.ts";
 import { bdaySchema } from "bdaybot/app/schema/bday.ts";
 import { createApp } from "@discord-applications/app";
+import { cronjob } from "bdaybot/app/cron.ts";
 
 // Put here or inside the cron job?
 const db = await Deno.openKv();
@@ -20,6 +21,8 @@ Deno.cron(
   "0 0 * * *",
   async () => {
     // do something here xd
+    console.log("running cron job now...");
+    await cronjob();
   },
 );
 

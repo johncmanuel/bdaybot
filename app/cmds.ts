@@ -24,7 +24,7 @@ export const handleAddCmd = async (options: CommandOptions) => {
     return sendMsg("Invalid date format. Please use MM/DD/YYYY or MM-DD-YYYY.");
   }
 
-  const key = [discordId, discordUsername, serverId];
+  const key = [serverId, discordId, discordUsername];
   const value: DiscordUser = {
     birthDate: birthDate,
   };
@@ -45,7 +45,7 @@ export const handleRemoveCmd = async (
   discordUsername: string,
   serverId: string,
 ) => {
-  const key = [discordId, discordUsername, serverId];
+  const key = [serverId, discordId, discordUsername];
 
   const deleteRes = await kv.atomic().check({ key, versionstamp: null }).delete(
     key,
@@ -65,7 +65,7 @@ export const handleUpdateCmd = async (options: CommandOptions) => {
     return sendMsg("Invalid date format. Please use MM/DD/YYYY or MM-DD-YYYY.");
   }
 
-  const key = [discordId, discordUsername, serverId];
+  const key = [serverId, discordId, discordUsername];
   const value: DiscordUser = {
     birthDate: newBirthDate,
   };
@@ -94,7 +94,7 @@ export const handleListCmd = async (serverId: string) => {
 // Get only one user's birthdate
 export const handleGetCmd = async (options: CommandOptions) => {
   const { discordId, discordUsername, serverId } = options;
-  const key = [discordId, discordUsername, serverId];
+  const key = [serverId, discordId, discordUsername];
   const user = await kv.get(key);
   return sendMsg(JSON.stringify(user));
 };

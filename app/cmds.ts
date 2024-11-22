@@ -11,14 +11,21 @@ export interface DiscordUserKey {
 }
 
 export interface CommandOptions {
-  birthDate: string;
-  discordId: string;
-  discordUsername: string;
-  serverId: string;
+  birthDate?: string | undefined; // Label this optional for the remove command
+  discordId: string | undefined;
+  discordUsername: string | undefined;
+  serverId: string | undefined;
 }
 
 export const handleAddCmd = async (options: CommandOptions) => {
   const { birthDate, discordId, discordUsername, serverId } = options;
+
+  if (
+    birthDate == undefined || discordId == undefined ||
+    discordUsername == undefined || serverId == undefined
+  ) {
+    return sendMsg("Missing required fields.");
+  }
 
   if (!validateDate(birthDate)) {
     return sendMsg("Invalid date format. Please use MM/DD/YYYY or MM-DD-YYYY.");
@@ -41,10 +48,17 @@ export const handleAddCmd = async (options: CommandOptions) => {
 };
 
 export const handleRemoveCmd = async (
-  discordId: string,
-  discordUsername: string,
-  serverId: string,
+  options: CommandOptions,
 ) => {
+  const { discordId, discordUsername, serverId } = options;
+
+  if (
+    discordId == undefined || discordUsername == undefined ||
+    serverId == undefined
+  ) {
+    return sendMsg("Missing required fields.");
+  }
+
   const key = [serverId, discordId, discordUsername];
 
   const deleteRes = await kv.atomic().check({ key, versionstamp: null }).delete(
@@ -60,6 +74,13 @@ export const handleRemoveCmd = async (
 export const handleUpdateCmd = async (options: CommandOptions) => {
   const { birthDate: newBirthDate, discordId, discordUsername, serverId } =
     options;
+
+  if (
+    newBirthDate == undefined || discordId == undefined ||
+    discordUsername == undefined || serverId == undefined
+  ) {
+    return sendMsg("Missing required fields.");
+  }
 
   if (!validateDate(newBirthDate)) {
     return sendMsg("Invalid date format. Please use MM/DD/YYYY or MM-DD-YYYY.");
@@ -82,18 +103,32 @@ export const handleUpdateCmd = async (options: CommandOptions) => {
 };
 
 // Get all users' birthdates in the server
-export const handleListCmd = async (serverId: string) => {
+export const handleListCmd = async (serverId: string | undefined) => {
+  if (serverId == undefined) {
+    return sendMsg("Missing server ID.");
+  }
+
   const entries = kv.list({ prefix: [serverId] });
   const users = [];
+
   for await (const entry of entries) {
     users.push([entry.key, entry.value]);
   }
+
   return sendMsg(JSON.stringify(users));
 };
 
 // Get only one user's birthdate
 export const handleGetCmd = async (options: CommandOptions) => {
   const { discordId, discordUsername, serverId } = options;
+
+  if (
+    discordId == undefined || discordUsername == undefined ||
+    serverId == undefined
+  ) {
+    return sendMsg("Missing required fields");
+  }
+
   const key = [serverId, discordId, discordUsername];
   const user = await kv.get(key);
   return sendMsg(JSON.stringify(user));

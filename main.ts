@@ -5,6 +5,13 @@
 // NOTE: data schema for bdays: discord id, bday date, discord username
 
 import {
+  handleAddCmd,
+  handleGetCmd,
+  handleListCmd,
+  handleRemoveCmd,
+  handleUpdateCmd,
+} from "bdaybot/app/cmds.ts";
+import {
   DISCORD_APP_ID,
   DISCORD_PUBLIC_KEY,
   DISCORD_TOKEN,
@@ -13,21 +20,19 @@ import { bdaySchema } from "bdaybot/app/schema/bday.ts";
 import { createApp } from "@discord-applications/app";
 import { cronjob } from "bdaybot/app/cron.ts";
 
-// Put here or inside the cron job?
-const db = await Deno.openKv();
-
 Deno.cron(
   "Get all birthdays every midnight from DB and send message via Discord webhook if one is today",
   "0 0 * * *",
   async () => {
     // do something here xd
+    //
     console.log("running cron job now...");
     await cronjob();
   },
 );
 
 if (import.meta.main) {
-  const highFive = await createApp(
+  const bday = await createApp(
     {
       schema: bdaySchema,
       applicationID: DISCORD_APP_ID,
@@ -38,20 +43,59 @@ if (import.meta.main) {
     },
     {
       user: {
+        // @ts-ignore: weird typing issue with discord app library
         add(interaction) {
-          const bday = interaction.options.bday;
+          const birthDate = interaction.data.parsedOptions?.bday;
+          const discordId = interaction.member?.user.id;
+          const discordUsername = interaction.member?.user.username;
+          const serverId = interaction.guild_id;
+          return handleAddCmd({
+            birthDate,
+            discordId,
+            discordUsername,
+            serverId,
+          });
         },
+        // @ts-ignore: weird typing issue with discord app library
         rm(interaction) {
+          const discordId = interaction.member?.user.id;
+          const discordUsername = interaction.member?.user.username;
+          const serverId = interaction.guild_id;
+          return handleRemoveCmd({
+            discordId,
+            discordUsername,
+            serverId,
+          });
         },
+        // @ts-ignore: weird typing issue with discord app library
         update(interaction) {
+          const birthDate = interaction.data.parsedOptions?.bday;
+          const discordId = interaction.member?.user.id;
+          const discordUsername = interaction.member?.user.username;
+          const serverId = interaction.guild_id;
+          return handleUpdateCmd({
+            birthDate,
+            discordId,
+            discordUsername,
+            serverId,
+          });
         },
-        "get-all"(interaction) {
+        // @ts-ignore: weird typing issue with discord app library
+        "all"(interaction) {
+          const serverId = interaction.guild_id;
+          return handleListCmd(
+            serverId,
+          );
         },
-        "get-user"(interaction) {
+        // @ts-ignore: weird typing issue with discord app library
+        "get"(interaction) {
+          const discordUser = interaction.data.parsedOptions?.user;
+          const serverId = interaction.guild_id;
+          return handleGetCmd({ serverId, discordUser });
         },
       },
     },
   );
 
-  Deno.serve(highFive);
+  Deno.serve(bday);
 }

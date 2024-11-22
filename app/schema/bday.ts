@@ -44,15 +44,15 @@ export const bdaySchema = {
               },
             },
           },
-          "get-all": {
+          "all": {
             description: "Get all birthdays in the database.",
           },
-          "get-user": {
+          "get": {
             description: "Get a user's birthday from the database.",
             options: {
               user: {
                 type: ApplicationCommandOptionType.User,
-                description: "The user's birthday to get",
+                description: "User of the birthday to get",
                 required: true,
               },
             },

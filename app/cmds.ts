@@ -1,5 +1,6 @@
 import { DiscordUser } from "bdaybot/app/types.ts";
 import { validateDate } from "bdaybot/app/utils.ts";
+import { InteractionResponseType } from "@discord-applications/app";
 
 const kv = await Deno.openKv();
 
@@ -20,7 +21,7 @@ export const handleAddCmd = async (options: CommandOptions) => {
   const { birthDate, discordId, discordUsername, serverId } = options;
 
   if (!validateDate(birthDate)) {
-    return "Invalid date format. Please use MM/DD/YYYY or MM-DD-YYYY.";
+    return sendMsg("Invalid date format. Please use MM/DD/YYYY or MM-DD-YYYY.");
   }
 
   const key = [discordId, discordUsername, serverId];
@@ -34,9 +35,9 @@ export const handleAddCmd = async (options: CommandOptions) => {
   ).commit();
 
   if (!res.ok) {
-    return "User's birthday already exists.";
+    return sendMsg("User's birthday already exists.");
   }
-  return "User added successfully.";
+  return sendMsg("User added successfully.");
 };
 
 export const handleRemoveCmd = async (
@@ -51,9 +52,9 @@ export const handleRemoveCmd = async (
   ).commit();
 
   if (!deleteRes.ok) {
-    return "Failed to remove user's birthdate.";
+    return sendMsg("Failed to remove user's birthdate.");
   }
-  return "User's birthdate removed successfully.";
+  return sendMsg("User's birthdate removed successfully.");
 };
 
 export const handleUpdateCmd = async (options: CommandOptions) => {
@@ -61,7 +62,7 @@ export const handleUpdateCmd = async (options: CommandOptions) => {
     options;
 
   if (!validateDate(newBirthDate)) {
-    return "Invalid date format. Please use MM/DD/YYYY or MM-DD-YYYY.";
+    return sendMsg("Invalid date format. Please use MM/DD/YYYY or MM-DD-YYYY.");
   }
 
   const key = [discordId, discordUsername, serverId];
@@ -75,9 +76,9 @@ export const handleUpdateCmd = async (options: CommandOptions) => {
   }).set(key, value).commit();
 
   if (!updateRes.ok) {
-    return "Failed to update user's birth date.";
+    return sendMsg("Failed to update user's birth date.");
   }
-  return "User's birth date updated successfully.";
+  return sendMsg("User's birth date updated successfully.");
 };
 
 // Get all users' birthdates in the server
@@ -87,12 +88,23 @@ export const handleListCmd = async (serverId: string) => {
   for await (const entry of entries) {
     users.push([entry.key, entry.value]);
   }
-  return users;
+  return sendMsg(JSON.stringify(users));
 };
 
+// Get only one user's birthdate
 export const handleGetCmd = async (options: CommandOptions) => {
   const { discordId, discordUsername, serverId } = options;
   const key = [discordId, discordUsername, serverId];
   const user = await kv.get(key);
-  return user;
+  return sendMsg(JSON.stringify(user));
+};
+
+// Relay data back to the user after invoking a command
+export const sendMsg = (data: string) => {
+  return {
+    type: InteractionResponseType.ChannelMessageWithSource,
+    data: {
+      content: data,
+    },
+  };
 };

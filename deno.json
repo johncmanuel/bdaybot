@@ -1,6 +1,6 @@
 {
   "tasks": {
-    "start": "deno run --watch -A --env main.ts",
+    "start": "deno run --watch -A --env --unstable-kv --unstable-cron main.ts",
     "ngrok": "ngrok http 8000"
   },
   "imports": {

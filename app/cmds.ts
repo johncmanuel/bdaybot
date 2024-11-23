@@ -1,21 +1,16 @@
-import { DiscordUser } from "bdaybot/app/types.ts";
+import {
+  CommandOptions,
+  DiscordUser,
+  DiscordUserKey,
+} from "bdaybot/app/types.ts";
 import { validateDate } from "bdaybot/app/utils.ts";
 import { InteractionResponseType } from "@discord-applications/app";
 
 const kv = await Deno.openKv();
 
-export interface DiscordUserKey {
-  discordId: string;
-  discordUsername: string;
-  serverId: string;
-}
-
-export interface CommandOptions {
-  birthDate?: string | undefined; // Label this optional for the remove command
-  discordId: string | undefined;
-  discordUsername: string | undefined;
-  serverId: string | undefined;
-}
+// When performing add, update, or remove commands, they must be done atomically to ensure
+// that both primary and secondary keys point to the same data
+// https://docs.deno.com/deploy/kv/manual/secondary_indexes/
 
 export const handleAddCmd = async (options: CommandOptions) => {
   const { birthDate, discordId, discordUsername, serverId } = options;

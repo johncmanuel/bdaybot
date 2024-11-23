@@ -50,6 +50,8 @@ export const bdaySchema = {
           "get": {
             description: "Get a user's birthday from the database.",
             options: {
+              // Should be a user object basically
+              // https://discord.com/developers/docs/resources/user#user-object
               user: {
                 type: ApplicationCommandOptionType.User,
                 description: "User of the birthday to get",

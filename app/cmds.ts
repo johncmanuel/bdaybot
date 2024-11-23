@@ -13,11 +13,11 @@ const kv = await Deno.openKv();
 // https://docs.deno.com/deploy/kv/manual/secondary_indexes/
 
 export const handleAddCmd = async (options: CommandOptions) => {
-  const { birthDate, discordId, discordUsername, serverId } = options;
+  const { birthDate, discordId, serverId } = options;
 
   if (
     birthDate == undefined || discordId == undefined ||
-    discordUsername == undefined || serverId == undefined
+    serverId == undefined
   ) {
     return sendMsg("Missing required fields.");
   }
@@ -26,7 +26,7 @@ export const handleAddCmd = async (options: CommandOptions) => {
     return sendMsg("Invalid date format. Please use MM/DD/YYYY or MM-DD-YYYY.");
   }
 
-  const key = [serverId, discordId, discordUsername];
+  const key = [serverId, discordId];
   const value: DiscordUser = {
     birthDate: birthDate,
   };
@@ -37,42 +37,41 @@ export const handleAddCmd = async (options: CommandOptions) => {
   ).commit();
 
   if (!res.ok) {
-    return sendMsg("User's birthday already exists.");
+    return sendMsg("Your birthday already exists!");
   }
-  return sendMsg("User added successfully.");
+  return sendMsg("Added your birthday successfully!");
 };
 
 export const handleRemoveCmd = async (
   options: CommandOptions,
 ) => {
-  const { discordId, discordUsername, serverId } = options;
+  const { discordId, serverId } = options;
 
   if (
-    discordId == undefined || discordUsername == undefined ||
-    serverId == undefined
+    discordId == undefined || serverId == undefined
   ) {
     return sendMsg("Missing required fields.");
   }
 
-  const key = [serverId, discordId, discordUsername];
+  const key = [serverId, discordId];
 
   const deleteRes = await kv.atomic().check({ key, versionstamp: null }).delete(
     key,
   ).commit();
 
   if (!deleteRes.ok) {
+    console.error("Remove command failed:", deleteRes);
     return sendMsg("Failed to remove user's birthdate.");
   }
   return sendMsg("User's birthdate removed successfully.");
 };
 
 export const handleUpdateCmd = async (options: CommandOptions) => {
-  const { birthDate: newBirthDate, discordId, discordUsername, serverId } =
-    options;
+  const { birthDate: newBirthDate, discordId, serverId } = options;
 
   if (
     newBirthDate == undefined || discordId == undefined ||
-    discordUsername == undefined || serverId == undefined
+    serverId == undefined
   ) {
     return sendMsg("Missing required fields.");
   }
@@ -81,20 +80,24 @@ export const handleUpdateCmd = async (options: CommandOptions) => {
     return sendMsg("Invalid date format. Please use MM/DD/YYYY or MM-DD-YYYY.");
   }
 
-  const key = [serverId, discordId, discordUsername];
+  const key = [serverId, discordId];
   const value: DiscordUser = {
     birthDate: newBirthDate,
   };
 
+  // Check if the user exists before updating
+  const getRes = await kv.get(key);
+
   const updateRes = await kv.atomic().check({
     key,
-    versionstamp: null,
+    versionstamp: getRes?.versionstamp,
   }).set(key, value).commit();
 
   if (!updateRes.ok) {
-    return sendMsg("Failed to update user's birth date.");
+    console.error("Update command failed:", updateRes);
+    return sendMsg("Failed to update your birthday! :(");
   }
-  return sendMsg("User's birth date updated successfully.");
+  return sendMsg("Birthday updated successfully!");
 };
 
 // Get all users' birthdates in the server
@@ -110,31 +113,34 @@ export const handleListCmd = async (serverId: string | undefined) => {
     users.push([entry.key, entry.value]);
   }
 
-  return sendMsg(JSON.stringify(users));
+  console.log(users);
+
+  return sendMsg("nothin");
 };
 
 // Get only one user's birthdate
 export const handleGetCmd = async (options: CommandOptions) => {
-  const { discordId, discordUsername, serverId } = options;
+  const { discordId, serverId } = options;
 
   if (
-    discordId == undefined || discordUsername == undefined ||
+    discordId == undefined ||
     serverId == undefined
   ) {
     return sendMsg("Missing required fields");
   }
 
-  const key = [serverId, discordId, discordUsername];
+  const key = [serverId, discordId];
   const user = await kv.get(key);
-  return sendMsg(JSON.stringify(user));
+  // @ts-ignore: ignore type issues when accessing value from deno kv
+  return sendMsg(`<@${discordId}>'s birthday is ${user?.value?.birthDate}.`);
 };
 
 // Relay data back to the user after invoking a command
-export const sendMsg = (data: string) => {
+export const sendMsg = (message: string) => {
   return {
     type: InteractionResponseType.ChannelMessageWithSource,
     data: {
-      content: data,
+      content: message,
     },
   };
 };

@@ -10,6 +10,7 @@ import {
   handleListCmd,
   handleRemoveCmd,
   handleUpdateCmd,
+  sendMsg,
 } from "bdaybot/app/cmds.ts";
 import {
   DISCORD_APP_ID,
@@ -21,7 +22,7 @@ import { createApp } from "@discord-applications/app";
 import { cronjob } from "bdaybot/app/cron.ts";
 
 Deno.cron(
-  "Get all birthdays every midnight from DB and send message via Discord webhook if one is today",
+  "Get all birthdays every midnight from DB",
   "0 0 * * *",
   async () => {
     // do something here xd
@@ -47,23 +48,19 @@ if (import.meta.main) {
         add(interaction) {
           const birthDate = interaction.data.parsedOptions?.bday;
           const discordId = interaction.member?.user.id;
-          const discordUsername = interaction.member?.user.username;
           const serverId = interaction.guild_id;
           return handleAddCmd({
             birthDate,
             discordId,
-            discordUsername,
             serverId,
           });
         },
         // @ts-ignore: weird typing issue with discord app library
         rm(interaction) {
           const discordId = interaction.member?.user.id;
-          const discordUsername = interaction.member?.user.username;
           const serverId = interaction.guild_id;
           return handleRemoveCmd({
             discordId,
-            discordUsername,
             serverId,
           });
         },
@@ -71,12 +68,10 @@ if (import.meta.main) {
         update(interaction) {
           const birthDate = interaction.data.parsedOptions?.bday;
           const discordId = interaction.member?.user.id;
-          const discordUsername = interaction.member?.user.username;
           const serverId = interaction.guild_id;
           return handleUpdateCmd({
             birthDate,
             discordId,
-            discordUsername,
             serverId,
           });
         },
@@ -91,7 +86,7 @@ if (import.meta.main) {
         "get"(interaction) {
           const discordUser = interaction.data.parsedOptions?.user;
           const serverId = interaction.guild_id;
-          return handleGetCmd({ serverId, discordUser });
+          return handleGetCmd({ serverId, discordId: discordUser });
         },
       },
     },

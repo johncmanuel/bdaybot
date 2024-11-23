@@ -1,10 +1,9 @@
 // Assumes date is in MM/DD/YYYY or MM-DD-YYYY format
 export const validateDate = (date: string): boolean => {
   const delim = date.includes("/") ? "/" : "-";
-  const escapedDelim = delim === "/" ? "\\/" : delim;
 
   const r = new RegExp(
-    `^(0[1-9]|1[0-2])${escapedDelim}(0[1-9]|[12][0-9]|3[01])${escapedDelim}\\d{4}$`,
+    `^(0[1-9]|1[0-2])${delim}(0[1-9]|[12][0-9]|3[01])${delim}\\d{4}$`,
   );
 
   if (!r.test(date)) {

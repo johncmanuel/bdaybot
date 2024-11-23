@@ -4,7 +4,6 @@ import {
 } from "@discord-applications/app";
 
 export const bdaySchemaName = "bday";
-export const bdaySubCmdGroupName = "user";
 
 export const bdaySchema = {
   chatInput: {
@@ -19,34 +18,40 @@ export const bdaySchema = {
             options: {
               bday: {
                 type: ApplicationCommandOptionType.String,
-                description: "Your birthday in MM/DD/YYYY format",
+                description:
+                  "Your birthday in either MM/DD/YYYY or MM-DD-YYYY.",
                 required: true,
               },
             },
           },
           rm: {
             description: "Remove your birthday from the database.",
+            // Need to include empty options if no options needed.
+            options: {},
           },
           update: {
             description: "Update your birthday in the database.",
             options: {
               bday: {
                 type: ApplicationCommandOptionType.String,
-                description: "Your new birthday MM/DD/YYYY format",
+                description:
+                  "Your new birthday in either MM/DD/YYYY or MM-DD-YYYY.",
                 required: true,
               },
             },
           },
           "all": {
             description: "Get all birthdays in the server you're in.",
+            // Need to include empty options if no options needed.
+            options: {},
           },
           "get": {
-            description: "Get a user's birthday from the database.",
+            description: "Get someone's birthday from the database.",
             options: {
               // options that involve users only give the user ID rather than the user object
               user: {
                 type: ApplicationCommandOptionType.User,
-                description: "User of the birthday to get",
+                description: "User of the birthday to get.",
                 required: true,
               },
             },

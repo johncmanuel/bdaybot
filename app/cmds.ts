@@ -4,7 +4,10 @@ import {
   DiscordUserKey,
 } from "bdaybot/app/types.ts";
 import { validateDate } from "bdaybot/app/utils.ts";
-import { InteractionResponseType } from "@discord-applications/app";
+import {
+  InteractionResponseType,
+  MessageFlags,
+} from "@discord-applications/app";
 
 const kv = await Deno.openKv();
 
@@ -54,16 +57,20 @@ export const handleRemoveCmd = async (
   }
 
   const key = [serverId, discordId];
+  const getRes = await kv.get(key);
 
-  const deleteRes = await kv.atomic().check({ key, versionstamp: null }).delete(
+  const deleteRes = await kv.atomic().check({
+    key,
+    versionstamp: getRes?.versionstamp,
+  }).delete(
     key,
   ).commit();
 
   if (!deleteRes.ok) {
     console.error("Remove command failed:", deleteRes);
-    return sendMsg("Failed to remove user's birthdate.");
+    return sendMsg("Failed to remove your birthday!.");
   }
-  return sendMsg("User's birthdate removed successfully.");
+  return sendMsg("Birthday removed successfully!");
 };
 
 export const handleUpdateCmd = async (options: CommandOptions) => {
@@ -131,6 +138,7 @@ export const handleGetCmd = async (options: CommandOptions) => {
 
   const key = [serverId, discordId];
   const user = await kv.get(key);
+
   // @ts-ignore: ignore type issues when accessing value from deno kv
   return sendMsg(`<@${discordId}>'s birthday is ${user?.value?.birthDate}.`);
 };
@@ -141,6 +149,8 @@ export const sendMsg = (message: string) => {
     type: InteractionResponseType.ChannelMessageWithSource,
     data: {
       content: message,
+      // Ensure only the user who invoked the command can see the message
+      flags: MessageFlags.Ephemeral,
     },
   };
 };

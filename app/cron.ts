@@ -4,13 +4,20 @@ const kv = await Deno.openKv();
 
 export const cronjob = async () => {
   const bdays = kv.list({ prefix: [DISCORD_GUILD_ID] });
-
   const users = [];
 
   for await (const bday of bdays) {
+    // @ts-ignore: ignore type issues when accessing value from Deno KV
     const userId: string = bday.key[1];
+    // @ts-ignore: ignore type issues when accessing value from Deno KV
     const birthDate: string = bday.value.birthDate;
+
     users.push({ userId, birthDate });
+  }
+
+  if (users.length === 0) {
+    console.log("no birthdays today for", new Date());
+    return;
   }
 
   const formattedBdays = users.map((user, idx) =>

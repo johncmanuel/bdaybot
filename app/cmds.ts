@@ -1,8 +1,4 @@
-import {
-  CommandOptions,
-  DiscordUser,
-  DiscordUserKey,
-} from "bdaybot/app/types.ts";
+import { CommandOptions, DiscordUser } from "bdaybot/app/types.ts";
 import { validateDate } from "bdaybot/app/utils.ts";
 import {
   InteractionResponseType,
@@ -110,19 +106,32 @@ export const handleUpdateCmd = async (options: CommandOptions) => {
 // Get all users' birthdates in the server
 export const handleListCmd = async (serverId: string | undefined) => {
   if (serverId == undefined) {
+    console.error("Missing server ID when running list command");
     return sendMsg("Missing server ID.");
   }
 
-  const entries = kv.list({ prefix: [serverId] });
+  const bdays = kv.list({ prefix: [serverId] });
   const users = [];
 
-  for await (const entry of entries) {
-    users.push([entry.key, entry.value]);
+  for await (const bday of bdays) {
+    // @ts-ignore: ignore type issues when accessing value from Deno KV
+    const userId: string = bday.key[1];
+    // @ts-ignore: ignore type issues when accessing value from Deno KV
+    const birthDate: string = bday.value.birthDate;
+
+    users.push({ userId, birthDate });
   }
 
-  console.log(users);
+  if (users.length === 0) {
+    console.log("no birthdays found in this server:", serverId);
+    return sendMsg("No birthdays found!");
+  }
 
-  return sendMsg("nothin");
+  const formattedBdays = users.map((user, idx) =>
+    `${idx + 1}. <@${user.userId}>: ${user.birthDate}`
+  ).join("\n");
+
+  return sendMsg(formattedBdays);
 };
 
 // Get only one user's birthdate
@@ -139,7 +148,7 @@ export const handleGetCmd = async (options: CommandOptions) => {
   const key = [serverId, discordId];
   const user = await kv.get(key);
 
-  // @ts-ignore: ignore type issues when accessing value from deno kv
+  // @ts-ignore: ignore type issues when accessing value from Deno KV
   return sendMsg(`<@${discordId}>'s birthday is ${user?.value?.birthDate}.`);
 };
 
@@ -150,6 +159,7 @@ export const sendMsg = (message: string) => {
     data: {
       content: message,
       // Ensure only the user who invoked the command can see the message
+      // so we don't ping other users when running the list or get commands
       flags: MessageFlags.Ephemeral,
     },
   };

@@ -10,7 +10,6 @@ import {
   handleListCmd,
   handleRemoveCmd,
   handleUpdateCmd,
-  sendMsg,
 } from "bdaybot/app/cmds.ts";
 import {
   DISCORD_APP_ID,

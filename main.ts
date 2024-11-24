@@ -25,8 +25,6 @@ Deno.cron(
   "Get all birthdays every midnight from DB",
   "0 0 * * *",
   async () => {
-    // do something here xd
-    //
     console.log("running cron job now...");
     await cronjob();
   },

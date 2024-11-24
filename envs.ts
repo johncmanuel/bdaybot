@@ -7,3 +7,6 @@ export const DISCORD_TOKEN = Deno.env.get("DISCORD_TOKEN")!;
 export const DISCORD_GUILD_ID = Deno.env.get("DISCORD_GUILD_ID")!;
 
 export const DISCORD_WEBHOOK_URL = Deno.env.get("DISCORD_WEBHOOK_URL")!;
+
+export const USE_PST_PDT: boolean =
+  Deno.env.get("USE_PST_PDT")?.toLowerCase() === "true";

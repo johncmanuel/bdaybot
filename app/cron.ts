@@ -5,6 +5,7 @@ const kv = await Deno.openKv();
 export const cronjob = async () => {
   const bdays = kv.list({ prefix: [DISCORD_GUILD_ID] });
   const users = [];
+  const today = new Date();
 
   for await (const bday of bdays) {
     // @ts-ignore: ignore type issues when accessing value from Deno KV
@@ -12,7 +13,19 @@ export const cronjob = async () => {
     // @ts-ignore: ignore type issues when accessing value from Deno KV
     const birthDate: string = bday.value.birthDate;
 
-    users.push({ userId, birthDate });
+    // Birthday assumed to be valid since slash commands validated them already
+    const delim = birthDate.includes("/") ? "/" : "-";
+    const [month, day, year] = birthDate.split(delim).map(Number);
+    const bdayDate = new Date(year, month - 1, day);
+
+    // Only add user to list if it's their birthday
+    if (
+      bdayDate.getFullYear() === today.getFullYear() &&
+      bdayDate.getMonth() === today.getMonth() &&
+      bdayDate.getDate() === today.getDate()
+    ) {
+      users.push(userId);
+    }
   }
 
   if (users.length === 0) {
@@ -20,17 +33,23 @@ export const cronjob = async () => {
     return;
   }
 
-  const formattedBdays = users.map((user, idx) =>
-    `${idx + 1}. <@${user.userId}>: ${user.birthDate}`
-  ).join("\n");
+  const formattedBdays = users.map((userId, idx) => `${idx + 1}. <@${userId}>`)
+    .join("\n");
 
-  await fetch(DISCORD_WEBHOOK_URL, {
+  const res = await fetch(DISCORD_WEBHOOK_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      content: `SAY HAPPY BIRTHDAY TO THESE PEOPLE!!!:\n${formattedBdays}`,
+      content:
+        `YOOOO! SAY HAPPY BIRTHDAY TO THESE PEOPLE!!!\n${formattedBdays}`,
     }),
   });
+
+  if (!res.ok) {
+    console.error("Failed to send to webhook:", res.statusText);
+    return;
+  }
+  console.log("Successfully sent to webhook");
 };

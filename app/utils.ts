@@ -19,3 +19,26 @@ export const validateDate = (date: string): boolean => {
     d.getDate() === day
   );
 };
+
+// Claude AI helped me with calculating the PST/PDT offset. Though, not sure
+// if they would be correct, mainly because of my suspicion of the date calculations
+// using .toLocaleString(). After running a few tests outside of this project, it seems to work.
+// We'll see... once we test in production >:)
+
+// Calculate UTC hour based on Pacific time
+// It must either be 7 (for PDT) or 8 (for PST)
+export const getUtcHourInPdtOrPst = (d?: Date): number => {
+  const pacificOffset = getPacificUtcOffset(d);
+  return (24 + pacificOffset) % 24;
+};
+
+// Check if in PST (UTC-8) or PDT (UTC-7)
+export const getPacificUtcOffset = (d?: Date): number => {
+  const locale = "en-US";
+  const date = d || new Date();
+  const pacificTime = new Date(
+    date.toLocaleString(locale, { timeZone: "America/Los_Angeles" }),
+  );
+  const utcTime = new Date(date.toLocaleString(locale, { timeZone: "UTC" }));
+  return (utcTime.getTime() - pacificTime.getTime()) / (60 * 60 * 1000);
+};

@@ -15,16 +15,25 @@ import {
   DISCORD_APP_ID,
   DISCORD_PUBLIC_KEY,
   DISCORD_TOKEN,
+  USE_PST_PDT,
 } from "bdaybot/envs.ts";
 import { bdaySchema } from "bdaybot/app/schema/bday.ts";
 import { createApp } from "@discord-applications/app";
 import { cronjob } from "bdaybot/app/cron.ts";
+import { getUtcHourInPdtOrPst } from "bdaybot/app/utils.ts";
 
+// NOTE: Deno Cron does not take time zones into account. So, may need to
+// dynamically adjust for PST/PDT. PST/PDT is chosen specifically since all my friends
+// live in the Pacific Time Zone. Since others may use the same code for their own birthday
+// bots, an environment variable will determine if the cron job will use PST/PDT or UTC time every midnight
+const utcHour = USE_PST_PDT ? getUtcHourInPdtOrPst() : 0;
+console.log(`UTC hour to run bday cron job every day: ${utcHour}`);
 Deno.cron(
-  "Get all birthdays every midnight from DB",
-  "0 0 * * *",
+  "Get all birthdays every midnight Pacific Time",
+  `0 ${utcHour} * * *`,
+  // "* * * * *",
   async () => {
-    console.log("running cron job now...");
+    console.log("Running cron job at:", new Date());
     await cronjob();
   },
 );

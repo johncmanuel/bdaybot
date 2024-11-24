@@ -1,9 +1,3 @@
-// TODO: get interactions server running, add crud operations for adding discord users' bdays
-// then get cron job via deno cron running that queries deno kv db for bdays and sends a message to the
-// discord channel
-//
-// NOTE: data schema for bdays: discord id, bday date, discord username
-
 import {
   handleAddCmd,
   handleGetCmd,

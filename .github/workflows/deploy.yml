@@ -34,7 +34,7 @@ jobs:
       - name: Upload to Deno Deploy
         uses: denoland/deployctl@v1
         with:
-          project: "johncarloma-bdaybot-13"
+          project: "bdaybot"
           entrypoint: "main.ts"
           root: ""
           

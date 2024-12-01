@@ -11,6 +11,7 @@ Discord bot that sends a message to a channel when it's someone's birthday!
 5. Invite your app/bot to a test Discord server using `<your ngrok server URL>/invite`
 6. Test the commands to see if they work! 
 
+For production, make sure to replace the interaction endpoint URL specified in your Discord application with the actual server URL.
 
 ## Commands
 

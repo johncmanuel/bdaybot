@@ -4,8 +4,10 @@ import {
   handleListCmd,
   handleRemoveCmd,
   handleUpdateCmd,
+  sendMsg,
 } from "bdaybot/app/cmds.ts";
 import {
+  DISCORD_ALLOWED_ROLE,
   DISCORD_APP_ID,
   DISCORD_PUBLIC_KEY,
   DISCORD_TOKEN,
@@ -49,6 +51,12 @@ if (import.meta.main) {
           const birthDate = interaction.data.parsedOptions?.bday;
           const discordId = interaction.member?.user.id;
           const serverId = interaction.guild_id;
+          const roles = interaction.member?.roles;
+          if (!roles?.includes(DISCORD_ALLOWED_ROLE)) {
+            return sendMsg(
+              "You do not have permission to use this command.",
+            );
+          }
           return handleAddCmd({
             birthDate,
             discordId,
@@ -59,6 +67,12 @@ if (import.meta.main) {
         rm(interaction) {
           const discordId = interaction.member?.user.id;
           const serverId = interaction.guild_id;
+          const roles = interaction.member?.roles;
+          if (!roles?.includes(DISCORD_ALLOWED_ROLE)) {
+            return sendMsg(
+              "You do not have permission to use this command.",
+            );
+          }
           return handleRemoveCmd({
             discordId,
             serverId,
@@ -69,6 +83,12 @@ if (import.meta.main) {
           const birthDate = interaction.data.parsedOptions?.bday;
           const discordId = interaction.member?.user.id;
           const serverId = interaction.guild_id;
+          const roles = interaction.member?.roles;
+          if (!roles?.includes(DISCORD_ALLOWED_ROLE)) {
+            return sendMsg(
+              "You do not have permission to use this command.",
+            );
+          }
           return handleUpdateCmd({
             birthDate,
             discordId,
@@ -78,6 +98,12 @@ if (import.meta.main) {
         // @ts-ignore: weird typing issue with discord app library
         "all"(interaction) {
           const serverId = interaction.guild_id;
+          const roles = interaction.member?.roles;
+          if (!roles?.includes(DISCORD_ALLOWED_ROLE)) {
+            return sendMsg(
+              "You do not have permission to use this command.",
+            );
+          }
           return handleListCmd(
             serverId,
           );
@@ -86,6 +112,12 @@ if (import.meta.main) {
         "get"(interaction) {
           const discordUser = interaction.data.parsedOptions?.user;
           const serverId = interaction.guild_id;
+          const roles = interaction.member?.roles;
+          if (!roles?.includes(DISCORD_ALLOWED_ROLE)) {
+            return sendMsg(
+              "You do not have permission to use this command.",
+            );
+          }
           return handleGetCmd({ serverId, discordId: discordUser });
         },
       },

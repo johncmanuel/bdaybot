@@ -10,3 +10,6 @@ export const DISCORD_WEBHOOK_URL = Deno.env.get("DISCORD_WEBHOOK_URL")!;
 
 export const USE_PST_PDT: boolean =
   Deno.env.get("USE_PST_PDT")?.toLowerCase() === "true";
+
+// Specified role that can use the slash commands
+export const DISCORD_ALLOWED_ROLE = Deno.env.get("DISCORD_ALLOWED_ROLE")!;

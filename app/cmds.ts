@@ -4,6 +4,7 @@ import {
   InteractionResponseType,
   MessageFlags,
 } from "@discord-applications/app";
+import { insertBdayIntoKv } from "bdaybot/app/kv.ts";
 
 const kv = await Deno.openKv();
 
@@ -22,20 +23,14 @@ export const handleAddCmd = async (options: CommandOptions) => {
   }
 
   if (!validateDate(birthDate)) {
-    return sendMsg("Invalid date format. Please use MM/DD/YYYY or MM-DD-YYYY.");
+    return sendMsg(
+      "Invalid date format. Please use MM/DD/YYYY or MM-DD-YYYY. The year will not be stored in the database, it is only used for date validation.",
+    );
   }
 
-  const key = [serverId, discordId];
-  const value: DiscordUser = {
-    birthDate: birthDate,
-  };
+  const res = await insertBdayIntoKv(kv, [serverId, discordId], birthDate);
 
-  const res = await kv.atomic().check({ key, versionstamp: null }).set(
-    key,
-    value,
-  ).commit();
-
-  if (!res.ok) {
+  if (!res) {
     return sendMsg("Your birthday already exists!");
   }
   return sendMsg("Added your birthday successfully!");

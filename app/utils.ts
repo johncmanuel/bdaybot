@@ -20,6 +20,11 @@ export const validateDate = (date: string): boolean => {
   );
 };
 
+// https://stackoverflow.com/a/16353241
+export const isLeapYear = (year: number): boolean => {
+  return ((year % 4 == 0) && (year % 100 != 0)) || (year % 400 == 0);
+};
+
 // Claude AI helped me with calculating the PST/PDT offset. Though, not sure
 // if they would be correct, mainly because of my suspicion of the date calculations
 // using .toLocaleString(). After running a few tests outside of this project, it seems to work.

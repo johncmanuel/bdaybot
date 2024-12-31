@@ -5,7 +5,7 @@ const kv = await Deno.openKv();
 
 export const cronjob = async () => {
   const today = new Date();
-  const users = await getBirthdayUsers(today, DISCORD_GUILD_ID, kv);
+  const users = await getBirthdayUsers(kv, DISCORD_GUILD_ID, today);
 
   if (users.length === 0) {
     console.log("no birthdays today for", today);
